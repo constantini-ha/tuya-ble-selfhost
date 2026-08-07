@@ -28,7 +28,13 @@ from homeassistant.const import (
 )
 from homeassistant.core import callback
 from homeassistant.data_entry_flow import FlowHandler, FlowResult
+from homeassistant.helpers.selector import (
+    QrCodeSelector,
+    QrCodeSelectorConfig,
+    QrErrorCorrectionLevel,
+)
 
+from .sharing import SharingCloud, decode_uuid_from_advertisement
 from .tuya_ble import SERVICE_UUID, TuyaBLEDeviceCredentials
 
 from .const import (
@@ -232,6 +238,8 @@ class TuyaBLEConfigFlow(ConfigFlow, domain=DOMAIN):
         self._data: dict[str, Any] = {}
         self._manager: HASSTuyaBLEDeviceManager | None = None
         self._get_device_info_error = False
+        self._sharing: SharingCloud | None = None
+        self._sharing_creds: dict[str, dict[str, Any]] | None = None
 
     async def async_step_bluetooth(
         self, discovery_info: BluetoothServiceInfoBleak
@@ -249,7 +257,7 @@ class TuyaBLEConfigFlow(ConfigFlow, domain=DOMAIN):
                 self._manager,
             )
         }
-        return await self.async_step_login()
+        return await self.async_step_auth_method()
 
     async def async_step_user(
         self, user_input: dict[str, Any] | None = None
@@ -258,7 +266,155 @@ class TuyaBLEConfigFlow(ConfigFlow, domain=DOMAIN):
         if self._manager is None:
             self._manager = HASSTuyaBLEDeviceManager(self.hass, self._data)
         await self._manager.build_cache()
-        return await self.async_step_login()
+        return await self.async_step_auth_method()
+
+    # --- Caminho novo: login por QR do Smart Life (sharing SDK) ---
+
+    async def async_step_auth_method(
+        self, user_input: dict[str, Any] | None = None
+    ) -> FlowResult:
+        """Sessão salva entra direto; senão oferece QR ou login legado."""
+        if self._sharing is None:
+            self._sharing = SharingCloud(self.hass)
+            if await self._sharing.async_restore():
+                creds = await self._sharing.async_get_ble_credentials()
+                if creds:
+                    self._sharing_creds = creds
+                    return await self.async_step_sharing_device()
+        return self.async_show_menu(
+            step_id="auth_method",
+            menu_options=["qr", "login"],
+        )
+
+    async def async_step_qr(
+        self, user_input: dict[str, Any] | None = None
+    ) -> FlowResult:
+        """Pede o código de usuário do app Smart Life e gera o QR."""
+        errors: dict[str, str] = {}
+        if user_input is not None:
+            qr = await self._sharing.async_get_qr_code(
+                user_input["user_code"].strip()
+            )
+            if qr:
+                return await self.async_step_scan()
+            errors["base"] = "qr_error"
+        return self.async_show_form(
+            step_id="qr",
+            data_schema=vol.Schema(
+                {
+                    vol.Required(
+                        "user_code",
+                        default=(self._sharing.user_code or ""),
+                    ): str,
+                }
+            ),
+            errors=errors,
+        )
+
+    async def async_step_scan(
+        self, user_input: dict[str, Any] | None = None
+    ) -> FlowResult:
+        """Mostra o QR; no submit confere se o app autorizou."""
+        errors: dict[str, str] = {}
+        if user_input is not None:
+            if await self._sharing.async_login():
+                creds = await self._sharing.async_get_ble_credentials()
+                if creds:
+                    self._sharing_creds = creds
+                    return await self.async_step_sharing_device()
+                errors["base"] = "no_devices"
+            else:
+                errors["base"] = "login_error"
+        qr = await self._sharing.async_get_qr_code(self._sharing.user_code)
+        if not qr:
+            return await self.async_step_qr()
+        return self.async_show_form(
+            step_id="scan",
+            data_schema=vol.Schema(
+                {
+                    vol.Optional("qr"): QrCodeSelector(
+                        config=QrCodeSelectorConfig(
+                            data=f"tuyaSmart--qrLogin?token={qr}",
+                            scale=5,
+                            error_correction_level=QrErrorCorrectionLevel.QUARTILE,
+                        )
+                    )
+                }
+            ),
+            errors=errors,
+        )
+
+    async def async_step_sharing_device(
+        self, user_input: dict[str, Any] | None = None
+    ) -> FlowResult:
+        """Casa o BLE descoberto com o dispositivo da conta e cria a entry."""
+        errors: dict[str, str] = {}
+        creds_map = self._sharing_creds or {}
+
+        if user_input is not None:
+            address = user_input.get(CONF_ADDRESS) or (
+                self._discovery_info.address if self._discovery_info else None
+            )
+            creds = creds_map.get(user_input["cloud_device"])
+            if address and creds:
+                await self.async_set_unique_id(address, raise_on_progress=False)
+                self._abort_if_unique_id_configured()
+                options = {CONF_ADDRESS: address, **creds}
+                return self.async_create_entry(
+                    title=creds["device_name"],
+                    data={CONF_ADDRESS: address},
+                    options=options,
+                )
+            errors["base"] = "device_not_registered"
+
+        # dispositivos BLE visíveis agora
+        if discovery := self._discovery_info:
+            self._discovered_devices[discovery.address] = discovery
+        else:
+            current_addresses = self._async_current_ids()
+            for discovery in async_discovered_service_info(self.hass):
+                if (
+                    discovery.address in current_addresses
+                    or discovery.service_data is None
+                    or SERVICE_UUID not in discovery.service_data.keys()
+                ):
+                    continue
+                self._discovered_devices[discovery.address] = discovery
+        if not self._discovered_devices:
+            return self.async_abort(reason="no_unconfigured_devices")
+
+        # pré-seleção: casa o uuid do anúncio com a conta
+        matched: str | None = None
+        target = self._discovery_info or next(iter(self._discovered_devices.values()))
+        adv_uuid = decode_uuid_from_advertisement(target)
+        if adv_uuid and adv_uuid in creds_map:
+            matched = adv_uuid
+
+        schema: dict[Any, Any] = {}
+        if not self._discovery_info:
+            schema[vol.Required(CONF_ADDRESS)] = vol.In(
+                {
+                    si.address: f"{si.address} ({si.name or 'BLE'})"
+                    for si in self._discovered_devices.values()
+                }
+            )
+        cloud_options = {
+            uuid: f"{c['device_name']} ({c['product_name'] or c['category']})"
+            for uuid, c in sorted(
+                creds_map.items(), key=lambda kv: kv[1]["device_name"]
+            )
+        }
+        if not cloud_options:
+            return self.async_abort(reason="no_devices")
+        schema[
+            vol.Required("cloud_device", default=matched or list(cloud_options)[0])
+        ] = vol.In(cloud_options)
+
+        return self.async_show_form(
+            step_id="sharing_device",
+            data_schema=vol.Schema(schema),
+            errors=errors,
+        )
 
     async def async_step_login(
         self, user_input: dict[str, Any] | None = None

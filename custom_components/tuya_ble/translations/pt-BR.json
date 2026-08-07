@@ -7,8 +7,8 @@
       "device_not_registered": "Device is not registered in Tuya cloud",
       "invalid_auth": "Invalid authentication",
       "login_error": "Login error ({code}): {msg}",
-      "qr_error": "Could not generate the QR code. Check the user code.",
-      "no_devices": "No BLE devices found on the account."
+      "qr_error": "Não foi possível gerar o QR code. Confira o código de usuário.",
+      "no_devices": "Nenhum dispositivo BLE encontrado na conta."
     },
     "flow_title": "{name}",
     "step": {
@@ -29,28 +29,28 @@
         "description": "Tuya BLE requires obtaining encryption key from Tuya cloud. Almost all devices only need to access the cloud once during setup.\n\nRefer to documentation of Tuya integration to retrive the cloud credentials https://www.home-assistant.io/integrations/tuya/\n\nEnter your Tuya credentials."
       },
       "auth_method": {
-        "title": "How do you want to connect your Tuya account?",
+        "title": "Como conectar à sua conta Tuya?",
         "menu_options": {
-          "qr": "QR code with the Smart Life app (recommended)",
-          "login": "Tuya IoT Platform login (advanced)"
+          "qr": "QR code com o app Smart Life (recomendado)",
+          "login": "Login na Tuya IoT Platform (avançado)"
         }
       },
       "qr": {
-        "title": "User code",
-        "description": "In the Smart Life app: Me → Settings → Account and Security → User Code.",
+        "title": "Código de usuário",
+        "description": "No app Smart Life: Eu → Configurações → Conta e segurança → Código de usuário.",
         "data": {
-          "user_code": "User code"
+          "user_code": "Código de usuário"
         }
       },
       "scan": {
-        "title": "Scan with Smart Life",
-        "description": "Open Smart Life, tap + (or the scan icon) and scan the code, then submit here."
+        "title": "Escaneie com o Smart Life",
+        "description": "Abra o Smart Life, toque em + (ou no ícone de scan) e escaneie. Depois confirme aqui."
       },
       "sharing_device": {
-        "title": "Pick the device",
+        "title": "Escolha o dispositivo",
         "data": {
-          "address": "Bluetooth device",
-          "cloud_device": "Device on your Tuya account"
+          "address": "Dispositivo Bluetooth",
+          "cloud_device": "Dispositivo na conta Tuya"
         }
       }
     }

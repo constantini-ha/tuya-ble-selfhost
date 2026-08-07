@@ -6,7 +6,9 @@
     "error": {
       "device_not_registered": "Device is not registered in Tuya cloud",
       "invalid_auth": "[%key:common::config_flow::error::invalid_auth%]",
-      "login_error": "Login error ({code}): {msg}"
+      "login_error": "Login error ({code}): {msg}",
+      "qr_error": "Could not generate the QR code. Check the user code.",
+      "no_devices": "No BLE devices found on the account."
     },
     "flow_title": "{name}",
     "step": {
@@ -25,6 +27,31 @@
           "username": "Account"
         },
         "description": "Tuya BLE requires obtaining encryption key from Tuya cloud. Almost all devices only need to access the cloud once during setup.\n\nRefer to documentation of Tuya integration to retrive the cloud credentials https://www.home-assistant.io/integrations/tuya/\n\nEnter your Tuya credentials."
+      },
+      "auth_method": {
+        "title": "How do you want to connect your Tuya account?",
+        "menu_options": {
+          "qr": "QR code with the Smart Life app (recommended)",
+          "login": "Tuya IoT Platform login (advanced)"
+        }
+      },
+      "qr": {
+        "title": "User code",
+        "description": "In the Smart Life app: Me → Settings → Account and Security → User Code.",
+        "data": {
+          "user_code": "User code"
+        }
+      },
+      "scan": {
+        "title": "Scan with Smart Life",
+        "description": "Open Smart Life, tap + (or the scan icon) and scan the code, then submit here."
+      },
+      "sharing_device": {
+        "title": "Pick the device",
+        "data": {
+          "address": "Bluetooth device",
+          "cloud_device": "Device on your Tuya account"
+        }
       }
     }
   },
@@ -69,10 +96,10 @@
         "name": "Irrigation duration"
       },
       "beep_volume": {
-          "name": "Lock Volume"
+        "name": "Lock Volume"
       },
       "language": {
-          "name": "Lock Language"
+        "name": "Lock Language"
       }
     },
     "select": {
@@ -95,7 +122,7 @@
         }
       },
       "beep_volume": {
-          "name": "Lock Volume"
+        "name": "Lock Volume"
       }
     },
     "binary_sensor": {
@@ -149,36 +176,36 @@
         "name": "Water intake"
       },
       "residual_electricity": {
-          "name": "Battery"
+        "name": "Battery"
       },
       "alarm_lock": {
-          "name": "Alarm"
+        "name": "Alarm"
       },
       "wrong_finger": {
-          "name": "Wrong Fingerprint"
+        "name": "Wrong Fingerprint"
       },
       "wrong_password": {
-          "name": "Wrong Password"
+        "name": "Wrong Password"
       },
       "low_battery": {
-          "name": "Low Battery"
+        "name": "Low Battery"
       },
       "time_left": {
-          "name": "Remaining irrigation time"
-        },
-        "unlock_fingerprint": {
-            "name": "Last used Fingerprint"
-        },
-        "unlock_card": {
-            "name": "Last used Card"
-        },
-        "unlock_password": {
-            "name": "Last used Password"
+        "name": "Remaining irrigation time"
+      },
+      "unlock_fingerprint": {
+        "name": "Last used Fingerprint"
+      },
+      "unlock_card": {
+        "name": "Last used Card"
+      },
+      "unlock_password": {
+        "name": "Last used Password"
       }
     },
     "switch": {
       "programming_mode": {
-        "name": "Programming Mode" 
+        "name": "Programming Mode"
       },
       "programming_switch": {
         "name": "Programming Switch"
@@ -212,7 +239,7 @@
       },
       "program_repeat_forever": {
         "name": "Repeat forever"
-      },      
+      },
       "reverse_positions": {
         "name": "Reverse positions"
       },
@@ -220,11 +247,11 @@
         "name": "[%key:component::switch::entity_component::_::name%]"
       },
       "lock_motor_state": {
-          "name": "Motor State"
-      },            
+        "name": "Motor State"
+      },
       "water_valve": {
-          "name": "Irrigation valve"
-      }    
+        "name": "Irrigation valve"
+      }
     },
     "text": {
       "program": {

@@ -227,6 +227,8 @@ class HASSTuyaBLEDeviceManager(AbstaractTuyaBLEDeviceManager):
         for config_entry in tuya_config_entries:
             data.clear()
             data.update(config_entry.data)
+            if not self._has_login(data):
+                continue
             key = self._get_cache_key(data)
             item = _cache.get(key)
             if item is None or len(item.credentials) == 0:
@@ -239,6 +241,8 @@ class HASSTuyaBLEDeviceManager(AbstaractTuyaBLEDeviceManager):
         for config_entry in ble_config_entries:
             data.clear()
             data.update(config_entry.options)
+            if not self._has_login(data):
+                continue
             key = self._get_cache_key(data)
             item = _cache.get(key)
             if item is None or len(item.credentials) == 0:
