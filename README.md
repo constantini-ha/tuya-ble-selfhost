@@ -1,3 +1,9 @@
+> [!NOTE]
+> **Tuya BLE Selfhost** é um fork mantido por [@Constantini21](https://github.com/Constantini21)
+> de [airy10/ha_tuya_ble](https://github.com/airy10/ha_tuya_ble) (linhagem original:
+> [PlusPlus-ua/ha_tuya_ble](https://github.com/PlusPlus-ua/ha_tuya_ble)). Todo crédito
+> da base aos projetos originais.
+
 # Home Assistant support for Tuya BLE devices
 
 ## Overview
