@@ -1,3 +1,5 @@
+<p align="center"><img src="brand/icon.svg" alt="Tuya BLE Selfhost" width="128"/></p>
+
 > [!NOTE]
 > **Tuya BLE Selfhost** é um fork mantido por [@Constantini21](https://github.com/Constantini21)
 > de [airy10/ha_tuya_ble](https://github.com/airy10/ha_tuya_ble) (linhagem original:
