@@ -23,5 +23,5 @@
     "pycountry>=22.3.5",
     "tuya-device-sharing-sdk~=0.2.4"
   ],
-  "version": "2026.8.7"
+  "version": "2026.8.8"
 }
