@@ -275,7 +275,7 @@
           "password": "Password",
           "username": "Account"
         },
-        "description": "Refer to documentation of Tuya integration to retrive the cloud credentials https://www.home-assistant.io/integrations/tuya/\n\nEnter your Tuya credentials."
+        "description": "Get the cloud credentials the same way as for the official Tuya integration (Tuya IoT Platform project), then enter them below."
       }
     }
   }
