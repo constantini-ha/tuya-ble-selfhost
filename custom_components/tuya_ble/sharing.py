@@ -100,6 +100,10 @@ class SharingCloud:
         self.user_code = data.get("user_code")
         return True
 
+    @property
+    def qr_code(self) -> str | None:
+        return self._qr_code
+
     async def async_get_qr_code(self, user_code: str) -> str | None:
         response = await self._hass.async_add_executor_job(
             self._login_control.qr_code, TUYA_CLIENT_ID, TUYA_SCHEMA, user_code
@@ -172,6 +176,9 @@ class SharingCloud:
             uuid = getattr(device, "uuid", None)
             local_key = getattr(device, "local_key", None)
             if not uuid or not local_key:
+                continue
+            # controles IR são virtuais (vivem atrás do blaster), nunca BLE
+            if str(getattr(device, "category", "")).startswith("infrared"):
                 continue
             functions = [
                 {"code": f.code, "type": f.type, "values": f.values}

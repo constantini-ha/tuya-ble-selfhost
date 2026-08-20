@@ -8,7 +8,8 @@
       "invalid_auth": "Invalid authentication",
       "login_error": "Login error ({code}): {msg}",
       "qr_error": "Não foi possível gerar o QR code. Confira o código de usuário.",
-      "no_devices": "Nenhum dispositivo BLE encontrado na conta."
+      "no_devices": "Nenhum dispositivo BLE encontrado na conta.",
+      "qr_login_error": "O app ainda não autorizou este QR. Escaneie o código exibido, toque em Autorizar no Smart Life e só então clique em Enviar."
     },
     "flow_title": "{name}",
     "step": {
@@ -26,7 +27,7 @@
           "password": "Password",
           "username": "Account"
         },
-        "description": "Tuya BLE requires obtaining encryption key from Tuya cloud. Almost all devices only need to access the cloud once during setup.\n\nRefer to documentation of Tuya integration to retrive the cloud credentials https://www.home-assistant.io/integrations/tuya/\n\nEnter your Tuya credentials."
+        "description": "Tuya BLE requires obtaining an encryption key from the Tuya cloud. Almost all devices only need to access the cloud once during setup.\n\nGet the cloud credentials the same way as for the official Tuya integration (Tuya IoT Platform project), then enter them below."
       },
       "auth_method": {
         "title": "Como conectar à sua conta Tuya?",
@@ -44,7 +45,7 @@
       },
       "scan": {
         "title": "Escaneie com o Smart Life",
-        "description": "Abra o Smart Life, toque em + (ou no ícone de scan) e escaneie. Depois confirme aqui."
+        "description": "1) Escaneie o QR com o Smart Life (+ ou ícone de scan). 2) Toque em AUTORIZAR no app. 3) Só então clique em Enviar aqui."
       },
       "sharing_device": {
         "title": "Escolha o dispositivo",

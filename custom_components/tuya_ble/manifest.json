@@ -15,12 +15,13 @@
     "bluetooth_adapters",
     "tuya"
   ],
-  "documentation": "https://www.home-assistant.io/integrations/tuya_ble",
+  "documentation": "https://github.com/constantini-ha/tuya-ble-selfhost",
   "requirements": [
     "tuya-iot-py-sdk==0.6.6",
     "pycountry>=22.3.5",
     "tuya-device-sharing-sdk~=0.2.4"
   ],
   "iot_class": "local_push",
-  "version": "2026.8.7"
+  "version": "2026.8.7",
+  "issue_tracker": "https://github.com/constantini-ha/tuya-ble-selfhost/issues"
 }

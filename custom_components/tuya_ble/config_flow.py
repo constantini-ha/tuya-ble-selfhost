@@ -317,15 +317,24 @@ class TuyaBLEConfigFlow(ConfigFlow, domain=DOMAIN):
         """Mostra o QR; no submit confere se o app autorizou."""
         errors: dict[str, str] = {}
         if user_input is not None:
-            if await self._sharing.async_login():
+            ok = await self._sharing.async_login()
+            if not ok:
+                # o app pode demorar a propagar a autorização
+                import asyncio as _asyncio
+                await _asyncio.sleep(2)
+                ok = await self._sharing.async_login()
+            if ok:
                 creds = await self._sharing.async_get_ble_credentials()
                 if creds:
                     self._sharing_creds = creds
                     return await self.async_step_sharing_device()
                 errors["base"] = "no_devices"
             else:
-                errors["base"] = "login_error"
-        qr = await self._sharing.async_get_qr_code(self._sharing.user_code)
+                errors["base"] = "qr_login_error"
+        # mantém o MESMO QR entre renders; só gera novo se ainda não existe
+        qr = self._sharing.qr_code or await self._sharing.async_get_qr_code(
+            self._sharing.user_code
+        )
         if not qr:
             return await self.async_step_qr()
         return self.async_show_form(
@@ -398,11 +407,19 @@ class TuyaBLEConfigFlow(ConfigFlow, domain=DOMAIN):
                     for si in self._discovered_devices.values()
                 }
             )
+        configured_ids = {
+            e.data.get("device_id") or e.options.get("device_id")
+            for e in self.hass.config_entries.async_entries("tuya_selfhost")
+        } | {
+            e.options.get("device_id")
+            for e in self.hass.config_entries.async_entries(DOMAIN)
+        }
         cloud_options = {
             uuid: f"{c['device_name']} ({c['product_name'] or c['category']})"
             for uuid, c in sorted(
                 creds_map.items(), key=lambda kv: kv[1]["device_name"]
             )
+            if c.get("device_id") not in configured_ids
         }
         if not cloud_options:
             return self.async_abort(reason="no_devices")
